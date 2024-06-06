@@ -48,6 +48,12 @@ function ResForm() {
     event.preventDefault();
 
     try {
+      const numberCheck = /^[0-9\(\)\-\s]+$/;
+
+      if (!numberCheck.test(formData.mobile_number)) {
+        throw new Error("Mobile number may only be numbers and '()-'");
+      }
+
       if (isNew) {
         await submitReservation(formData); // Send POST request
       } else {
