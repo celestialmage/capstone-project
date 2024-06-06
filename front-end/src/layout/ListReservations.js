@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./Reservation.css";
 
 export default function ListReservations({
@@ -21,9 +22,9 @@ export default function ListReservations({
           </p>
           {reservation.status === "booked" && (
             <button>
-              <a href={`/reservations/${reservation.reservation_id}/seat`}>
+              <Link to={`/reservations/${reservation.reservation_id}/seat`}>
                 Seat
-              </a>
+              </Link>
             </button>
           )}
           {reservation.status === "seated" && (
@@ -35,9 +36,9 @@ export default function ListReservations({
             </button>
           )}
           <button>
-            <a href={`/reservations/${reservation.reservation_id}/edit`}>
+            <Link to={`/reservations/${reservation.reservation_id}/edit`}>
               Edit
-            </a>
+            </Link>
           </button>
           <button
             id="cancel"
