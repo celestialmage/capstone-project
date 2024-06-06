@@ -51,8 +51,8 @@ function update(reservation, id) {
   };
 
   return knex("reservations")
-    .insert(data)
     .where({ reservation_id: id })
+    .update(data)
     .returning("*");
 }
 

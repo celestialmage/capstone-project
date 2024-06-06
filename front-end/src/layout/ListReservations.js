@@ -1,4 +1,5 @@
 import React from "react";
+import "./Reservation.css";
 
 export default function ListReservations({
   reservations,
@@ -12,6 +13,7 @@ export default function ListReservations({
           <h3>
             {`${reservation.first_name} ${reservation.last_name} - ${reservation.reservation_time}`}
           </h3>
+          <h4>ID: {reservation.reservation_id}</h4>
           <h5>Party of {reservation.people}</h5>
           <h6>{reservation.mobile_number}</h6>
           <p data-reservation-id-status={reservation.reservation_id}>

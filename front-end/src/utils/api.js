@@ -11,6 +11,7 @@ const API_BASE_URL =
 /**
  * Defines the default headers for these functions to work with `json-server`
  */
+
 const headers = new Headers();
 headers.append("Content-Type", "application/json");
 
@@ -52,13 +53,112 @@ async function fetchJson(url, options, onCancel) {
   }
 }
 
+export async function submitReservation(reservation) {
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/reservations`);
+
+  const request = {
+    method: "POST",
+    headers,
+    signal: abortController.signal,
+    body: JSON.stringify({ data: reservation }),
+  };
+
+  return await fetchJson(url, request, []);
+}
+
+export async function editReservation(reservation, id) {
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/reservations/${id}`);
+
+  const request = {
+    method: "PUT",
+    headers,
+    signal: abortController.signal,
+    body: JSON.stringify({ data: reservation }),
+  };
+
+  console.log(request);
+
+  return await fetchJson(url, request, []);
+}
+
+export async function finishReservation(id) {
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/tables/${id}/seat`);
+
+  const request = {
+    method: "DELETE",
+    headers,
+    signal: abortController.signal,
+  };
+
+  console.log("deleting...");
+
+  return await fetchJson(url, request, []);
+}
+
+export async function seatReservation(tableId, resId) {
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/tables/${tableId}/seat`);
+
+  const request = {
+    method: "PUT",
+    headers,
+    signal: abortController.signal,
+    body: JSON.stringify({ data: { reservation_id: resId } }),
+  };
+
+  return await fetchJson(url, request, []);
+}
+
+export async function adjustStatus(id, status) {
+  const request = {
+    headers,
+  };
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/reservations/${id}/status`);
+  request.method = "PUT";
+  request.body = JSON.stringify({ data: { status } });
+  request.signal = abortController.signal;
+
+  return await fetchJson(url, request, []);
+}
+
+export async function readReservation(id) {
+  const request = {
+    headers,
+  };
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/reservations/${id}`);
+
+  request.method = "GET";
+  request.signal = abortController.signal;
+
+  return await fetchJson(url, request, [])
+    .then(formatReservationDate)
+    .then(formatReservationTime);
+}
+
+export async function listTables() {
+  const request = {
+    headers,
+  };
+  const abortController = new AbortController();
+  const url = new URL(`${API_BASE_URL}/tables`);
+  request.method = "GET";
+  request.signal = abortController.signal;
+
+  return await fetchJson(url, request, []);
+}
+
 /**
  * Retrieves all existing reservation.
  * @returns {Promise<[reservation]>}
  *  a promise that resolves to a possibly empty array of reservation saved in the database.
  */
 
-async function listReservations(params, signal) {
+export async function listReservations(params, signal) {
   const url = new URL(`${API_BASE_URL}/reservations`);
   Object.entries(params).forEach(([key, value]) =>
     url.searchParams.append(key, value.toString())
@@ -67,5 +167,3 @@ async function listReservations(params, signal) {
     .then(formatReservationDate)
     .then(formatReservationTime);
 }
-
-export { listReservations };

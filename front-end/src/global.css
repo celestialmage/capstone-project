@@ -1,0 +1,30 @@
+button {
+  border: none;
+  margin-right: 5px;
+  margin-left: 5px;
+  border-radius: 5px;
+}
+
+button:hover {
+  color: white;
+  background-color: darkgray;
+}
+
+button:active {
+  background-color: gray;
+}
+
+button:active,
+button:visited {
+  border: none;
+  outline: none;
+}
+
+
+a,
+a:visited,
+a:hover,
+a:active {
+  color: inherit;
+  text-decoration: none;
+}

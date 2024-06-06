@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { listTables, readReservation, seatReservation } from "../utils/api";
 import { useParams, useHistory } from "react-router-dom";
-import formatReservationDate from "../utils/format-reservation-date";
-import formatReservationTime from "../utils/format-reservation-time";
 import ErrorAlert from "../layout/ErrorAlert";
+import "./Form.css";
 
 export default function SeatForm() {
   const [formData, setFormData] = useState({ table_id: "" });
@@ -11,32 +11,12 @@ export default function SeatForm() {
   const [error, setError] = useState(null);
   const navigate = useHistory();
   const parameters = useParams();
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const request = {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        data: { reservation_id: reservation.reservation_id },
-      }),
-    };
-
     try {
-      const response = await fetch(
-        `${BASE_URL}/tables/${formData.table_id}/seat`,
-        request
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-
-        throw new Error(errorData.error || "Unknown Error Occured");
-      }
+      await seatReservation(formData.table_id, reservation.reservation_id);
 
       setError(null);
       navigate.push("/dashboard");
@@ -52,22 +32,11 @@ export default function SeatForm() {
   useEffect(() => {
     async function loadInfo() {
       const { id } = parameters;
-      const resResponse = await fetch(BASE_URL + `/reservations/${id}`);
-      let resData = await resResponse.json();
+      const reservation = await readReservation(id);
+      setReservation(reservation);
 
-      // Ensure resData.data exists
-      if (resData.data) {
-        resData.data = formatReservationDate(resData.data);
-        resData.data = formatReservationTime(resData.data);
-        setReservation(resData.data);
-      }
-
-      const tableResponse = await fetch(BASE_URL + "/tables");
-      let tableData = await tableResponse.json();
-
-      if (tableData.data) {
-        setTables(tableData.data);
-      }
+      const tables = await listTables();
+      setTables(tables);
     }
 
     loadInfo();
@@ -97,11 +66,14 @@ export default function SeatForm() {
             <option key="default" value="" disabled>
               -- Select a table --
             </option>
-            {tables.map((table) => (
-              <option key={table.table_id} value={table.table_id}>
-                {table.table_name} - {table.capacity}
-              </option>
-            ))}
+            {tables.length > 0 &&
+              tables
+                .filter((table) => !table.reservation_id)
+                .map((table) => (
+                  <option key={table.table_id} value={table.table_id}>
+                    {table.table_name} - {table.capacity}
+                  </option>
+                ))}
           </select>
         </label>
         <hr />

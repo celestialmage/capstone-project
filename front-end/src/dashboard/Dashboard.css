@@ -1,0 +1,40 @@
+main {
+  padding-left: 15px;
+}
+
+.group {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+.item {
+  flex: 2;
+}
+
+.item-large {
+  flex: 3;
+}
+
+.item:first-child {
+  margin-left: 0;
+}
+
+.item:last-child {
+  margin-right: 0;
+}
+
+@media all and (min-width: 768px) {
+  .group {
+    flex-direction: row;
+  }
+
+  .tables {
+    text-align: right;
+    padding-right: 15px;
+  }
+
+  .table {
+    margin: 15px 15px 0 0;
+  }
+}

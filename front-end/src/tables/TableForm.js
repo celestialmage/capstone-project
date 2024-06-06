@@ -62,7 +62,7 @@ export default function TableForm() {
 
   return (
     <div>
-      <form className="col-5" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="table_name">
           Table Name
           <input

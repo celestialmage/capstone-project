@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams, useHistory } from "react-router-dom";
-import formatReservationDate from "../utils/format-reservation-date";
+import {
+  submitReservation,
+  editReservation,
+  readReservation,
+} from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
+import "./Form.css";
 
 function ResForm() {
   const defaultForm = {
@@ -16,25 +21,8 @@ function ResForm() {
   const navigate = useHistory();
   const parameters = useParams();
   const isNew = useLocation().pathname.includes("new");
-  const [method, setMethod] = useState("POST"); // Initialize with a default method
-  const BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/reservations`;
 
-  // Use useEffect to set the method based on isNew
-  useEffect(() => {
-    if (isNew) {
-      setMethod("POST");
-    } else {
-      setMethod("PUT");
-    }
-  }, [isNew]);
-
-  const request = {
-    method: method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-
+  const [reservation, setReservation] = useState(null);
   const [formData, setFormData] = useState(defaultForm);
   const [error, setError] = useState(null);
 
@@ -58,20 +46,12 @@ function ResForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    let response;
-
-    request.body = JSON.stringify({ data: formData });
 
     try {
       if (isNew) {
-        response = await fetch(BASE_URL, request); // Send POST request
+        await submitReservation(formData); // Send POST request
       } else {
-        response = await fetch(`${BASE_URL}/${parameters.id}`, request); // Corrected to include request object
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Unknown error occurred");
+        await editReservation(formData, parameters.id);
       }
 
       setError(null);
@@ -83,18 +63,13 @@ function ResForm() {
 
   useEffect(() => {
     async function loadReservation(id) {
-      const data = await fetch(`${BASE_URL}/${id}`);
-      const response = await data.json();
-
-      formatReservationDate(response.data);
-
-      setFormData(response.data);
+      const reservation = await readReservation(id);
+      setReservation(reservation);
+      setFormData(reservation);
     }
 
     if (!isNew) {
       loadReservation(parameters.id);
-    } else {
-      setFormData(defaultForm);
     }
   }, [isNew, parameters.id]);
 
@@ -102,7 +77,7 @@ function ResForm() {
 
   return (
     <div>
-      <form className="col-5" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="first_name">
           First Name
           <input
@@ -173,8 +148,16 @@ function ResForm() {
         <button name="submit" type="submit">
           Submit
         </button>
-        <button name="cancel" id="cancel" onClick={() => navigate.go(-1)}>
-          cancel
+        <button
+          name="cancel"
+          id="cancel"
+          onClick={() =>
+            reservation
+              ? navigate.push(`/dashboard?date=${reservation.reservation_date}`)
+              : navigate.push("/dashboard")
+          }
+        >
+          Cancel
         </button>
       </form>
       {error && <ErrorAlert error={error} />}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { listTables, finishReservation, adjustStatus } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
 import ListReservations from "../layout/ListReservations";
+import "./ReservationSearch.css";
 
 export default function ReservationSearch() {
   const defaultForm = {
@@ -8,7 +10,6 @@ export default function ReservationSearch() {
   };
 
   const BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/reservations`;
-  console.log(BASE_URL);
   const [formData, setFormData] = useState(defaultForm);
   const [tables, setTables] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -57,30 +58,6 @@ export default function ReservationSearch() {
     }
   };
 
-  async function adjustStatus(id, status) {
-    try {
-      const request = {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ data: { status } }),
-      };
-
-      const response = await fetch(`${BASE_URL}/${id}/status`, request);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Unknown error occurred");
-      }
-
-      setError(null);
-      return response;
-    } catch (error) {
-      setError(error);
-    }
-  }
-
   async function cancelReservation(id) {
     if (
       window.confirm(
@@ -88,58 +65,46 @@ export default function ReservationSearch() {
       )
     ) {
       await adjustStatus(id, "cancelled");
+      setUpdate(!update);
     }
   }
 
-  async function finishReservation(id) {
+  async function finishReservationButton(id) {
     if (
       window.confirm(
         "Is this table ready to seat new guests? This cannot be undone."
       )
     ) {
-      const request = {
-        method: "DELETE",
-      };
-
-      const resTable = tables.find((table) => table.reservation_id === id);
-
-      await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/tables/${resTable.table_id}/seat`,
-        request
-      );
-
-      setUpdate(!update);
+      try {
+        const resTable = tables.find((table) => table.reservation_id === id);
+        await finishReservation(resTable.table_id);
+        setUpdate(!update);
+      } catch (error) {
+        setError(error);
+      }
     }
   }
 
   useEffect(() => {
     async function loadTables() {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/tables`
-      );
+      const tables = await listTables();
 
-      const data = await response.json();
-
-      const results = data.data;
-
-      setTables(results);
+      setTables(tables);
     }
 
     loadTables();
   }, [update]);
 
   return (
-    <div>
+    <main>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="mobile_number">
-          <input
-            name="mobile_number"
-            id="mobile_number"
-            required
-            type="text"
-            onChange={handleChange}
-          />
-        </label>
+        <input
+          name="mobile_number"
+          id="mobile_number"
+          required
+          type="text"
+          onChange={handleChange}
+        />
         <button name="submit" type="submit">
           Find
         </button>
@@ -151,11 +116,11 @@ export default function ReservationSearch() {
         <ListReservations
           reservations={reservations}
           cancelReservation={cancelReservation}
-          finishReservation={finishReservation}
+          finishReservationButton={finishReservationButton}
         />
       )}
 
       {reservations.length === 0 && <h5>No reservations found.</h5>}
-    </div>
+    </main>
   );
 }

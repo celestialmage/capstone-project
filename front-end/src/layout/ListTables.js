@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function ListTables({ tables, finishReservation }) {
+export default function ListTables({ tables, finishReservationButton }) {
   return tables.map((table) => (
     <div className="table" key={table.table_id}>
       <h5>
@@ -13,7 +13,7 @@ export default function ListTables({ tables, finishReservation }) {
         <button
           data-table-id-finish={table.table_id}
           onClick={() => {
-            finishReservation(table.reservation_id);
+            finishReservationButton(table.reservation_id);
           }}
         >
           Finish
